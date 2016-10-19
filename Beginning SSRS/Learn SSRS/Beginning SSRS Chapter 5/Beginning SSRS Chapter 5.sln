@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "Grouping Level Reports", "Grouping Level Reports\Grouping Level Reports.rptproj", "{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Default = Debug|Default
+		DebugLocal|Default = DebugLocal|Default
+		Release|Default = Release|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Debug|Default.ActiveCfg = Debug
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Debug|Default.Build.0 = Debug
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Debug|Default.Deploy.0 = Debug
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.DebugLocal|Default.ActiveCfg = DebugLocal
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.DebugLocal|Default.Build.0 = DebugLocal
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Release|Default.ActiveCfg = Release
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Release|Default.Build.0 = Release
+		{F36CC4C4-B772-4FBF-81F4-2882C3A5F8E6}.Release|Default.Deploy.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

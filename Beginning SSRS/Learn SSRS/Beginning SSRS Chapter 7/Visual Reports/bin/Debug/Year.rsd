@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition">
+  <DataSet Name="Year">
+    <Query>
+      <DataSourceReference>AdventureWorks2016</DataSourceReference>
+      <CommandText>SELECT YEAR(OrderDate) AS OrderYear 
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate)
+ORDER BY YEAR(OrderDate);</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="OrderYear">
+        <DataField>OrderYear</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+    </Fields>
+  </DataSet>
+</SharedDataSet>

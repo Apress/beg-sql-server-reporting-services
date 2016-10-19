@@ -1,0 +1,59 @@
+--2014 Sales Dataset
+WITH 
+Sales AS (
+SELECT SUM(TotalDue) AS Sales, MONTH(OrderDate) AS OrderMonth,
+    YEAR(OrderDate) AS OrderYear,
+    LAG(SUM(TotalDue),12) OVER(ORDER BY YEAR(OrderDate),
+        MONTH(OrderDate)) * 1.10 AS Quota
+FROM Sales.SalesOrderHeader 
+GROUP BY MONTH(OrderDate), YEAR(OrderDate)
+),
+Comparison AS (
+SELECT OrderYear, Sales, OrderMonth, Quota,SUM(Sales) 
+        OVER(PARTITION BY OrderYear)/SUM(Quota) 
+        OVER(PARTITION BY OrderYear) AS PercentOfGoal
+FROM Sales)
+SELECT Sales, OrderMonth, Quota,
+    CASE WHEN PercentOfGoal >= .98 THEN 1 
+         WHEN PercentOfGoal > .9 THEN 0
+         ELSE -1 END AS Status
+FROM Comparison
+WHERE OrderYear = 2014;
+
+
+--SalesByState
+SELECT SUM(TotalDue) AS Sales, vS.CountryRegionName, vS.StateProvinceName, 
+	YEAR(OrderDate) AS OrderYear
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Person.BusinessEntityAddress AS BEA 
+    ON BEA.BusinessEntityID = SOH.CustomerID
+JOIN Person.Address AS A ON BEA.AddressID = A.AddressID
+JOIN Person.vStateProvinceCountryRegion AS vS 
+    ON A.StateProvinceID = vS.StateProvinceID
+WHERE CountryRegionName = 'United States'
+GROUP BY A.City, vS.CountryRegionName, vS.StateProvinceName,
+	YEAR(OrderDate);
+
+--Sales
+WITH 
+Sales AS (
+SELECT SUM(TotalDue) AS Sales, MONTH(OrderDate) AS OrderMonth,
+    YEAR(OrderDate) AS OrderYear,
+    LAG(SUM(TotalDue),12,600000) OVER(ORDER BY YEAR(OrderDate),
+        MONTH(OrderDate)) * 1.10 AS Quota
+FROM Sales.SalesOrderHeader 
+GROUP BY MONTH(OrderDate), YEAR(OrderDate)
+),
+Comparison AS (
+SELECT OrderYear, Sales, OrderMonth, Quota,
+    Sales/Quota AS PercentOfGoal
+FROM Sales)
+SELECT OrderYear, Sales, 'M' + RIGHT('0' + CAST(OrderMonth AS VARCHAR(2)),2) AS OrderMonth, Quota,
+    PercentOfGoal, DATEFROMPARTS(OrderYear,OrderMonth, 1) AS OrderDate,
+    CASE WHEN PercentOfGoal >= 0.98 THEN 1 
+         WHEN PercentOfGoal >= 0.9 THEN 0
+         ELSE -1 END AS Status
+FROM Comparison;
+
+
+

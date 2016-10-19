@@ -1,0 +1,52 @@
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+--Average sales
+=Sum(Fields!Sales.Value)/CountDistinct(Fields!TerritoryID.Value)
+
+--Page footer
+="Page " & Globals!PageNumber & " of " & Globals!TotalPages 
+
+--Sales by Territory 2 report
+--SalesByTerritory query
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+--Average sales formula
+=Sum(Fields!Sales.Value)/CountDistinct(Fields!TerritoryID.Value)
+
+--Background color, second row
+#8fb3f3
+
+--Background color, third row
+#c7d9f9
+
+--Footer
+="Page " & Globals!PageNumber & " of " & Globals!TotalPages
+
+
+--Sales by Territory Matrix report
+--SalesByTerritory query
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+
+

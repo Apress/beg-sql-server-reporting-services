@@ -1,0 +1,52 @@
+--Working with Tables report
+--Query for SalesSummary
+SELECT YEAR(OrderDate) AS OrderYear, SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate);
+
+--Query for SalesDetails 
+SELECT CustomerID, SalesOrderID, OrderDate, TotalDue
+FROM Sales.SalesOrderHeader;
+
+--Alternating background color
+= IIf(RowNumber(Nothing) Mod 2 = 0, "LightBlue", "White")
+
+--Footer 
+Page [&PageNumber] of [&TotalPages]
+
+--New footer
+="Page " & Globals!PageNumber -1 & " of " & Globals!TotalPages -1
+
+--Calculated field report
+--Sales dataset
+SELECT TOP(1000) SOD.SalesOrderID, SOH.OrderDate, 
+    SOD.OrderQty, SOD.UnitPrice, 
+    P.StandardCost 
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesOrderDetail AS SOD 
+    ON SOH.SalesOrderID = SOD.SalesOrderID
+JOIN Production.Product AS P ON P.ProductID = SOD.ProductID;
+
+--Extended cost
+=Fields!OrderQty.Value * Fields!StandardCost.Value
+
+--Extended price
+=Fields!OrderQty.Value * Fields!UnitPrice.Value
+
+--Table cell expression
+=Fields!ExtendedPrice.Value - Fields!ExtendedCost.Value
+
+--List Report
+--ProductList query
+SELECT P.ProductID, P.Name, PH.LargePhoto
+FROM Production.Product AS P 
+JOIN Production.ProductProductPhoto AS PP ON P.ProductID = PP.ProductID
+JOIN Production.ProductPhoto AS PH ON PP.ProductPhotoID = PH.ProductPhotoID
+JOIN Production.ProductSubcategory AS SC ON SC.ProductSubcategoryID = P.ProductSubcategoryID
+JOIN Production.ProductCategory AS C ON C.ProductCategoryID = SC.ProductCategoryID
+WHERE PP.[Primary] = 1 AND C.ProductCategoryID IN (1,4);
+
+
+
+
+

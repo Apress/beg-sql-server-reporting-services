@@ -1,0 +1,168 @@
+--Sales by Territory Matrix report
+--Replacement query
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+WHERE YEAR(OrderDate) = @Year
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+
+--Territory shared dataset
+SELECT TerritoryID, Name AS Territory
+FROM Sales.SalesTerritory;
+
+--Next replacement query for SalesByTerritory
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+WHERE YEAR(OrderDate) = @Year AND T.TerritoryID = @Territory
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+--Dataset using IN
+SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, SUM(TotalDue) AS Sales, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+WHERE YEAR(OrderDate) IN (@Year) AND T.TerritoryID = @Territory
+GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+    YEAR(OrderDate), S.Name;
+
+--Cascading parameters
+--Territory query
+SELECT DISTINCT T.TerritoryID, T.Name AS Territory
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+WHERE YEAR(OrderDate) IN (@Year);
+
+
+--Stored procedure
+USE AdventureWorks2016;
+GO
+IF OBJECT_ID('usp_SalesByTerritory') IS NOT NULL 
+    DROP PROC usp_SalesByTerritory;
+GO
+CREATE PROC usp_SalesByTerritory @Year INT, @TerritoryID INT AS 
+    SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, 
+        SUM(TotalDue) AS Sales, 
+        T.TerritoryID, T.Name AS Territory, s.Name AS Store
+    FROM sales.SalesOrderHeader AS SOH
+    JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+    JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+    JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+    WHERE YEAR(OrderDate) = @Year AND T.TerritoryID = @TerritoryID
+    GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+        YEAR(OrderDate), S.Name;
+
+--Run the proc
+usp_SalesByTerritory @Year = 2011, @TerritoryID = 6;
+
+--ListToTable function
+USE AdventureWorks2016;
+GO
+
+IF OBJECT_ID('udf_ListToTable') IS NOT NULL
+    DROP FUNCTION dbo.udf_ListToTable;
+GO
+
+CREATE FUNCTION dbo.udf_ListToTable(@List NVARCHAR(4000), 
+    @Delimiter NCHAR(1)) 
+RETURNS @ValueList TABLE (ListItem NVARCHAR(50)) AS
+BEGIN   
+    DECLARE @Pos INT;
+    DECLARE @Item NVARCHAR(50);
+    --Find the first delimiter
+    SET @Pos = CHARINDEX(@Delimiter,@List);
+    --loop until all items are processed
+	WHILE @Pos > 0 BEGIN 
+	    --insert the current item
+	    INSERT INTO @ValueList(ListItem)
+	    SELECT LEFT(@List,@Pos-1);
+		--remove current item from the string
+	    SET @List = SUBSTRING(@List,@Pos+1,4000);
+		--find the next delimiter
+	    SET @Pos = CHARINDEX(@Delimiter,@List);
+END;
+--add the last item
+INSERT INTO @ValueList(ListItem)
+SELECT @List;
+RETURN;
+END;
+		 
+GO
+
+--Modified stored proc
+USE AdventureWorks2016;
+GO
+IF OBJECT_ID('usp_SalesByTerritory') IS NOT NULL 
+    DROP PROC usp_SalesByTerritory;
+GO
+CREATE PROC usp_SalesByTerritory 
+    @YearList NVARCHAR(4000), @TerritoryIDList NVARCHAR(4000) AS
+	
+	DECLARE @Years TABLE (OrderYear INT);
+	DECLARE @Territories TABLE(TerritoryID INT);
+      --Save the lists into table variables
+	INSERT INTO @Years(OrderYear)
+	SELECT ListItem 
+	FROM dbo.udf_ListToTable(@YearList,',');
+
+	INSERT INTO @Territories(TerritoryID)
+	SELECT ListItem 
+	FROM dbo.udf_ListToTable(@TerritoryIDList,',');
+
+
+    --Change the query to use IN lists in the WHERE clause 
+    SELECT YEAR(OrderDate) AS OrderYear, C.CustomerID, 
+	    SUM(TotalDue) AS Sales, 
+        T.TerritoryID, T.Name AS Territory, s.Name AS Store
+    FROM sales.SalesOrderHeader AS SOH
+    JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+    JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+    JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+    WHERE YEAR(OrderDate) IN (SELECT OrderYear FROM @Years)
+	    AND T.TerritoryID IN (SELECT TerritoryID FROM @Territories)
+	GROUP BY C.CustomerID, T.TerritoryID, T.Name, 
+        YEAR(OrderDate), S.Name;
+
+GO
+
+--Rectangle
+=Not Parameters!ShowRectangle.Value
+
+--Square
+=Not Parameters!ShowSquare.Value
+
+--Hide detail
+=NOT Parameters!DisplayDetailRows.Value
+
+--Hide Territory
+=NOT Parameters!DisplayTerritories.Value
+
+--Bold font
+=Iif(SUM(Fields!Sales.Value)>=2000000,"Bold","Default")
+
+--Sales details
+SELECT C.CustomerID, SalesOrderID, OrderDate, TotalDue, 
+    T.TerritoryID, T.Name AS Territory, s.Name AS Store
+FROM sales.SalesOrderHeader AS SOH
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+JOIN Sales.Customer AS C ON SOH.CustomerID = C.CustomerID
+JOIN Sales.Store AS S ON S.BusinessEntityID = C.StoreID
+WHERE YEAR(OrderDate) = @Year AND T.TerritoryID = @Territory;
+
+
+
+
+

@@ -1,0 +1,15 @@
+--Shared dataset Year
+SELECT DISTINCT YEAR(OrderDate) AS OrderYear
+FROM Sales.SalesOrderHeader 
+ORDER BY OrderYear;
+
+--Embedded dataset Sales
+SELECT SUM(TotalDue) AS TotalSales, MONTH(OrderDate) AS OrderMonth, YEAR(OrderDate) AS OrderYear 
+FROM Sales.SalesOrderHeader
+GROUP BY MONTH(OrderDate), YEAR(OrderDate);
+
+--Change to dataset Sales
+SELECT SUM(TotalDue) AS TotalSales, MONTH(OrderDate) AS OrderMonth, YEAR(OrderDate) AS OrderYear 
+FROM Sales.SalesOrderHeader
+WHERE YEAR(OrderDate) = @Year
+GROUP BY MONTH(OrderDate), YEAR(OrderDate);

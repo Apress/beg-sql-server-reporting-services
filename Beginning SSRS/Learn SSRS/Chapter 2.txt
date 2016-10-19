@@ -1,0 +1,45 @@
+--Wizard query
+SELECT T.[Group], T.Name AS Region, YEAR(OrderDate) AS OrderYear, 
+    Month(OrderDate) AS OrderMonth, OrderDate, SalesOrderID, TotalDue
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID;
+
+--Expression for grand total
+="Grand Total " & FormatCurrency(Sum(Fields!TotalDue.Value),2,0,True,True)
+
+--total sales by year for North America
+SELECT T.[Group], T.Name As Region, YEAR(OrderDate) AS OrderYear, 
+    SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+WHERE T.[Group] = 'North America'
+GROUP BY T.[Group], T.Name , YEAR(OrderDate)
+ORDER BY Region, OrderYear; 
+
+--Pivoted sales for North America
+SELECT [Group], Region,
+    [2011], [2012], [2013], [2014]
+FROM 
+(SELECT T.[Group], T.Name As Region, YEAR(OrderDate) AS OrderYear, 
+    SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID
+WHERE T.[Group] = 'North America'
+GROUP BY T.[Group], T.Name , YEAR(OrderDate)
+) AS SourceTable
+PIVOT
+(SUM(TotalSales) 
+FOR OrderYear IN ([2011], [2012], [2013], [2014])
+)
+AS PivotTable
+ORDER BY Region;
+
+
+--Matrix report query
+SELECT T.[Group], T.Name As Region, YEAR(OrderDate) AS OrderYear,
+    Month(OrderDate) AS OrderMonth,
+    OrderDate, SalesOrderID, TotalDue
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON SOH.TerritoryID = T.TerritoryID;
+
+

@@ -1,0 +1,7 @@
+--View SSRS subscriptions
+SELECT Name AS ReportName, ScheduleID AS JobName, s.[Description]
+FROM [Catalog] c 
+JOIN Subscriptions s ON c.ItemID = s.Report_OID 
+JOIN ReportSchedule rs ON c.ItemID = rs.ReportID
+    AND rs.SubscriptionID = s.SubscriptionID;
+

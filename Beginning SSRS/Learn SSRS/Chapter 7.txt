@@ -1,0 +1,125 @@
+--Shared dataset Year
+SELECT YEAR(OrderDate) AS OrderYear 
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate)
+ORDER BY YEAR(OrderDate); 
+
+
+--Charts report
+--Dataset Sales
+SELECT SUM(TotalDue) AS TotalSales, MONTH(OrderDate) AS OrderMonth, 
+    T.TerritoryID, T.Name AS TerritoryName, 
+    Sum(Sum(TotalDue)) OVER(PARTITION BY T.TerritoryID) AS TerritoryTotal
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON T.TerritoryID = SOH.TerritoryID
+WHERE YEAR(OrderDate) = @Year
+GROUP BY MONTH(OrderDate), T.TerritoryID, T.Name;
+
+--First chart title expression
+="Total Sales by Territory for " & Parameters!Year.Value
+
+--tooltip
+=FormatCurrency(Sum(Fields!TotalSales.Value),0)
+
+--Treemap tooltip
+=Fields!TerritoryName.Value & " " & FormatCurrency(Sum(Fields!TotalSales.Value),0)
+
+--Chart title
+="Sales by Territory for " & Parameters!Year.Value
+
+--Graph category group property
+=MonthName(Fields!OrderMonth.Value)
+
+--Series tooltip
+=Fields!TerritoryName.Value & " " & FormatCurrency(Fields!TotalSales.Value,0)
+
+--Series chart title
+="Sales by Month for " & Parameters!Year.Value
+
+--Guages report
+--SalesQuota
+SELECT * FROM 
+    (VALUES(2011,1000, 899),
+        (2012,1000,1010),
+        (2013,1200,1100),
+        (2014,1200,1220)) 
+    AS Quota ([Year],[Target],Sales)
+WHERE [Year] = @Year;
+
+--Maximum property
+=Fields!Target.Value * 1.25
+
+--LinearRange3 Start
+=Fields!Target.Value * .95
+
+--LinearRange3 End
+=Fields!Target.Value * 1.25
+
+--LinearRange2 start
+=Fields!Target.Value * .75
+
+--LinearRange2 end
+=Fields!Target.Value * .95
+
+--LinearRange1 end
+=Fields!Target.Value * .75
+
+--SalesAllYears dataset
+SELECT * FROM 
+    (VALUES(2011,1000, 899),
+        (2012,1000,1010),
+        (2013,1200,1100),
+        (2014,1200,1220)) 
+    AS Quota ([Year],[Target],Sales);
+
+--Guage in a report maximum
+=Fields!Target.Value * 1.25
+
+--Small controls report
+--Sales query
+SELECT YEAR(OrderDate) AS OrderYear, MONTH(OrderDate) AS OrderMonth,
+    SUM(TotalDue) AS Sales      
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate), MONTH(OrderDate);
+
+--Tooltip sparkline
+=MonthName(Fields!OrderMonth.Value) & " " & FormatCurrency(Fields!Sales.Value,0)
+
+--Tooltip data bar
+=MonthName(Fields!OrderMonth.Value) & " " & FormatCurrency(Fields!Sales.Value,0)
+
+--Map report
+--MapData query
+DECLARE @Year INT = 2013;
+SELECT SUM(TotalDue) AS Sales, vS.CountryRegionName, vS.StateProvinceName
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Person.BusinessEntityAddress AS BEA 
+    ON BEA.BusinessEntityID = SOH.CustomerID
+JOIN Person.Address AS A ON BEA.AddressID = A.AddressID
+JOIN Person.vStateProvinceCountryRegion AS vS 
+    ON A.StateProvinceID = vS.StateProvinceID
+WHERE CountryRegionName = 'United States'
+    AND YEAR(OrderDate) = @Year
+GROUP BY A.City, vS.CountryRegionName, vS.StateProvinceName;
+
+--Map polygon tooltip
+=Fields!StateProvinceName.Value & " " &  FormatCurrency(Fields!Sales.Value,0)
+
+--Map title
+="US Sales by State " & Parameters!Year.Value
+
+
+--Dashboard report
+--Sales query
+SELECT SUM(TotalDue) AS TotalSales, MONTH(OrderDate) AS OrderMonth, 
+    T.TerritoryID, T.Name AS TerritoryName, 
+    Sum(Sum(TotalDue)) OVER(PARTITION BY T.TerritoryID) AS TerritoryTotal
+FROM Sales.SalesOrderHeader AS SOH 
+JOIN Sales.SalesTerritory AS T ON T.TerritoryID = SOH.TerritoryID
+WHERE YEAR(OrderDate) = @Year
+GROUP BY MONTH(OrderDate), T.TerritoryID, T.Name;
+
+--Page header
+="Sales Dashboard for " & Parameters!Year.Value
+
+
